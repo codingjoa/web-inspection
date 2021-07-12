@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ko" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style media="screen">
+      table{border-collapse:collapse; min-width:400px;}
+      th, td{border:solid 2px #444;}
+      th{background-color:#444; color:#fff;}
+      input{width:100%; display:block;}
+
+      div.box{text-align:center;}
+      div.box>h3{font-size:2em;}
+      div.weed,div.btn{display:inline-block; font-size:1.4em; border:solid 2px #444; border-radius:8px; padding:4px; margin:4px;}
+      div.weed{width:200px;}
+      div.btn{width:100px; text-align:center; cursor: pointer;}
+      div.btn.selected{background-color: #444; color:#fff;}
+      div.weed>input{font-size:1.4em;}
+      div.weed>span{display:block;}
+      div.barcode-black{display:inline-block; border:solid 1px #000; height:40px;}
+      div.barcode-white{display:inline-block; border:solid 1px #fff; height:40px;}
+      table>tbody>tr>td.loss, div.weed>input.loss{background-color:red;}
+      table>tbody>tr>td.profit, div.weed>input.profit{background-color:green;}
+
+
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="btn" onclick="EshowResult()">결과 </div>
+    </nav>
+    <div id="result" class="box" style="display:none;">
+      <h3>결과</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>가격대</th>
+            <th>검품 개수</th>
+            <th>POS 개수</th>
+            <th>검품 매가</th>
+            <th>POS 매가</th>
+            <th>차이 개수</th>
+            <th>차이 금액</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
+      <table>
+        <thead>
+          <tr>
+            <th>상품명</th>
+            <th>차이 개수</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
+    </div>
+    <script type="text/javascript">
+      var boxes = document.getElementsByClassName('box');
+      var tbody = boxes[0].getElementsByTagName('tbody')[0];
+      var tbody_counter = boxes[0].getElementsByTagName('tbody')[1];
+      var currentShow = 1;
+      var nav = document.getElementsByTagName('nav')[0];
+      var btnsize = 1;
+      var boxAll = [];
+      var sumArrayR = []; // 실재고 총량
+      var sumArrayP = []; // POS재고 총량
+
+      var emptyArray = [];
+      var e1 = [
+        [
+          ['켄트 퍼플1', '3500', '8802198'],
+          ['켄트 스위치1', '3500', '8802200']
+        ],
+        [
+          ['네오프레시', '4500', '8802171'],
+          ['네오퍼플', '4500', '8802172'],
+          ['네오부스트+', '4500', '8802174'],
+          ['네오스위치', '4500', '8802173']
+        ],
+        [
+          ['네오루비쿨+', '4500', '8802108'],
+          ['네오트로피컬쿨+', '4500', '8802156'],
+          ['네오브라이트토바코', '4500', '8802169'],
+          ['네오다크토바코+', '4500', '8802170']
+        ],
+        [
+          ['던힐6mg', '4500', '8801818'],
+          ['던힐3mg', '4500', '8801820'],
+          ['던힐1mg', '4500', '8801822'],
+          ['던힐프로스트', '4500', '8801824']
+        ],
+        [
+          ['파인컷수프림', '4500', '8801414'],
+          ['파인컷1mg', '4500', '8801412'],
+          ['파인컷프로스트', '4500', '8801643'],
+          ['파인컷울트라0.1', '4500', '8801571']
+        ],
+        [
+          ['던힐스위치6mg', '4500', '8801978'],
+          ['던힐스위치원', '4500', '8801976'],
+          ['로스만수퍼슬림1', '4100', '8801947'],
+          ['로스만수퍼슬림블루', '4100', '8801949']
+        ]
+      ];
+
+      var e2 = [
+        [
+          ['LBS옐로3', '4500', '8802211'],
+          ['LBS옐로1', '4500', '8802133']
+        ],
+        [
+          ['LBS블루수퍼슬림', '4500', '8802139'],
+          ['LBS블루', '4500', '8802132'],
+          ['LBS퍼플', '4500', '8801915']
+        ],
+        [
+          ['세븐스타7', '4500', '8802130'],
+          ['세븐스타5', '4500', '8802210']
+        ],
+        [
+          ['메비우스오리지널', '4500', '8802076'],
+          ['스카이블루갑', '4500', '8802074'],
+          ['스파이블루팩', '4500', '8802073'],
+          ['윈드블루', '4500', '8802075']
+        ],
+        [
+          ['LSS윈드블루', '4500', '8802078'],
+          ['LSS원', '4500', '8802079'],
+          ['E-스타일6', '4000', '8801911'],
+          ['E-스타일3', '4000', '8801910']
+        ],
+        [
+          ['카멜필터', '4000', '4032905'],
+          ['카멜블루', '4000', '4032908'],
+          ['수퍼슬림3', '4000', '8801918'],
+          ['수퍼슬림1', '4000', '8801919']
+        ],
+      ];
+
+      var e3 = [
+        [
+          ['히츠골드', '4500', '8888888'],
+          ['히츠브론즈', '4500', '8801871']
+        ],
+        [
+          ['히츠퍼플', '4500', '8802009'],
+          ['히츠앰버', '4500', '8802004'],
+          ['히츠실버', '4500', '8802005']
+        ],
+        [
+          ['히츠블루', '4500', '8802003'],
+          ['히츠그린', '4500', '8802002'],
+          ['히츠그린징', '4500', '8801873']
+        ],
+        [
+          ['말보로레드', '4500', '8801170'],
+          ['말보로미듐', '4500', '8801172'],
+          ['말보로골드', '4500', '8801174'],
+          ['말보로실버', '4500', '8801240']
+        ],
+        [
+          ['아이스블라스트', '4500', '8801717'],
+          ['아이스블라스트원', '4500', '8801761'],
+          ['말보로하이브리드5', '4500', '8801765'],
+          ['말보로하이브리드1', '4500', '8801764']
+        ],
+        [
+          ['아쿠아5', '4500', '8801312'],
+          ['아쿠아3', '4500', '8801446'],
+          ['팔리아멘트원', '4500', '8801311'],
+          ['하이브리드5', '4500', '8801762']
+        ],
+        [
+          ['블랙후레쉬', '4500', '8801449'],
+          ['하이브리드1', '4500', '8801769'],
+          ['라크', '4500', '8801184'],
+          ['화이트후레쉬', '4500', '8801175']
+        ]
+      ];
+
+      var k1 = [
+        [
+          ['레종프렌치라인', '4500', '880111601102'],
+          ['체인지히말라야', '4500', '880111601331'],
+          ['에쎄체인지4', '4500', '880111600557'],
+          ['에쎄체인지1', '4500', '880111600531'],
+          ['에쎄체인지W', '4500', '880111600600'],
+          ['에쎄체인지업', '4500', '880111600725'],
+          ['에쎄체인지빙', '4500', '880111601001'],
+          ['에쎄체인지린', '4500', '880111600849']
+        ],
+        [
+          ['보헴시가스키니', '4500', '880111601222'],
+          ['보헴시가6', '4500', '880111600129'],
+          ['보헴시가3', '4500', '880111600298'],
+          ['보헴시가1', '4500', '880111600127'],
+          ['시가미니5', '4500', '880111600467'],
+          ['시가미니1', '4500', '880111600465'],
+          ['파이프스코티', '5000', '880111601028'],
+          ['보헴쿠바나샷', '4500', '880111600392'],
+          ['보헴쿠바나더블', '4500', '880111600390']
+        ],
+        [
+          ['레종프렌치블랙', '4500', '880111600683'],
+          ['레종프렌치요고', '4500', '880111600717'],
+          ['레종블루', '4500', '8801118'],
+          ['레종블랙', '4500', '880111600091'],
+          ['레종썬프레쏘', '4500', '880111600605'],
+          ['레종아이스프레쏘', '4500', '880111600533'],
+          ['레종프레쏘', '4500', '880111600461'],
+          ['레종휘바', '4500', '880111600813'],
+          ['시즌', '4500', '8801115']
+        ],
+        [
+          ['심플에이스', '4500', '880111600154'],
+          ['심플에이스3', '4500', '8801210'],
+          ['심플에이스1', '4500', '880111600196'],
+          ['심플클래식', '4300', '8800342'],
+          ['한라산', '4000', '8800354'],
+          ['에쎄센스1', '4800', '880111600367'],
+          ['슬림핏브라운', '4500', '880111600653'],
+          ['슬림핏화이트', '4500', '880111600651']
+        ]
+      ];
+
+      var k2 = [
+        [
+          ['믹스카트리지', '500', '880111601217'],
+          ['믹스아이스', '4500', '880111601248'],
+          ['믹스프렌치', '4500', '880111601259'],
+          ['믹스아이스더블', '4500', '8801116013234'],
+          ['믹스믹스', '4500', '880111601243'],
+          ['믹스프레쏘', '4500', '880111601257']
+        ],
+        [
+          ['핏골든파이프', '4500', '880111601397'],
+          ['핏체인지더블유', '4500', '880111601399'],
+          ['핏체인지', '4500', '880111600943'],
+          ['핏체인지업', '4500', '880111600957'],
+          ['핏스파키', '4500', '880111600945'],
+          ['핏체인지톡', '4500', '880111601157'],
+          ['핏쿨샷', '4500', '880111601159']
+        ],
+        [
+          ['에쎄로열팰리스', '10000', '880111600743'],
+          ['에쎄골든리프', '6000', '880111600139'],
+          ['에쎄골든리프1mg', '6000', '880111600559'],
+          ['에쎄스페셜골드', '5000', '880111600059'],
+          ['에쎄스페셜골드1mg', '5000', '880111600210'],
+          ['에쎄스페셜골드0.5mg', '5000', '880111600691'],
+          ['에쎄스페셜골드오션', '5000', '880111601161'],
+          ['클라우드9', '5000', '8801198'],
+          ['클라우드9원', '5000', '880111600109']
+        ],
+        [
+          ['에쎄클래식', '4500', '8800664'],
+          ['에쎄프라임', '4500', '8801196'],
+          ['에쎄원', '4500', '8801208'],
+          ['에쎄아이스', '4500', '8801192'],
+          ['에쎄아이스1mg', '4500', '880111600355'],
+          ['에쎄프레쏘', '4500', '880111600482'],
+          ['에쎄수', '4500', '880111600093'],
+          ['에쎄수0.5', '4500', '880111600119'],
+          ['에쎄수0.1', '4500', '880111600171']
+        ],
+        [
+          ['더원블루', '4500', '880111600045'],
+          ['더원오렌지', '4500', '880111600103'],
+          ['더원화이트', '4500', '880111600161'],
+          ['더원임팩트', '4500', '880111600246'],
+          ['더원체인지', '4500', '880111600607'],
+          ['아프리카썬데이', '4500', '880111601207'],
+          ['아프리카몰라', '4500', '880111600640'],
+          ['아프리카아이스잭', '4500', '880111600855'],
+          ['아프리카룰라', '4500', '880111600545']
+        ],
+        [
+          ['보헴시가리브레', '4500', '880111600741'],
+          ['아이스볼트GT', '4500', '880111600673'],
+          ['에쎄엣지1mg', '4500', '880111600200'],
+          ['타임', '4300', '8800968'],
+          ['타임미드', '4300', '8801206'],
+          ['허밍타임', '4300', '8801107'],
+          ['디스플러스', '4100', '8800660'],
+          ['디스', '4000', '8800661']
+        ]
+      ];
+
+      var juul = [
+        [
+          ['쥴슬레이트', '39000', '081991301874'],
+          ['쥴실버', '39000', '081991301876'],
+          ['팟크리스프', '9000', '084004820041'],
+          ['팟트로피컬', '9000', '084004820029'],
+          ['팟딜라이트', '9000', '084004820038'],
+          ['팟클래식', '9000', '084004820032'],
+          ['팟프레쉬', '9000', '084004820035']
+        ]
+      ];
+
+      var etc = [
+        [
+          ['로스만수퍼슬림0.5', '4100', '8801948'],
+          ['로스만수퍼슬림클릭', '4100', '8801926'],
+          ['파인컷스위치원', '4500', '8802039'],
+          ['로스만5mg', '4100', '8801922'],
+          ['로스만1mg', '4100', '8801923']
+        ],
+        [
+          ['던힐1mg포켓', '3000', '8801862'],
+          ['던힐6mg포켓', '3000', '8801859'],
+          ['말보로징더블', '4500', '8801996'],
+          ['슬림골드', '4800', '8801185']
+        ]
+      ];
+
+      var kr = [[['디스', '4000', '880000000000'], ['디스플러스', '4100', '880000000000'], ['보헴파이프스코티', '5000', '880000000000']]];
+      document.getElementsByTagName('body')[0].appendChild(makeCbox('외산담배(왼쪽1)', e1));
+      document.getElementsByTagName('body')[0].appendChild(makeCbox('외산담배(왼쪽2)', e2));
+      document.getElementsByTagName('body')[0].appendChild(makeCbox('국산담배(왼쪽)', k1));
+      document.getElementsByTagName('body')[0].appendChild(makeCbox('국산담배(오른쪽)', k2));
+      document.getElementsByTagName('body')[0].appendChild(makeCbox('외산담배(오른쪽)', e3));
+      document.getElementsByTagName('body')[0].appendChild(makeCbox('쥴', juul));
+      document.getElementsByTagName('body')[0].appendChild(makeCbox('기타', etc));
+      EshowBox(1);
+
+      function calcResult()
+      {
+        var name, price, in1, in2, datR, datP, sumRc=0, sumPc=0, sumRp=0, sumPp=0;
+        calcReset();
+        tbody.innerHTML = '';
+        tbody_counter.innerHTML = '';
+        for(var i=0; i<boxAll.length; i++)
+        {
+          name = boxAll[i].getElementsByTagName('span')[0].innerText;
+          price = Number(boxAll[i].getElementsByTagName('span')[1].innerText);
+          in1 = Number(boxAll[i].getElementsByTagName('input')[0].value);
+          in2 = Number(boxAll[i].getElementsByTagName('input')[1].value);
+          calcSet(0, price, in1);
+          calcSet(1, price, in2);
+          if(in1-in2 != 0) makeTdatB(name, in1-in2);
+        }
+        for(var i=0; i<sumArrayR.length; i++)
+        {
+          datR = sumArrayR[i];
+          datP = sumArrayP[i];
+          sumRc += datR[1];
+          sumPc += datP[1];
+          sumRp += Number(datR[1]*datR[0]);
+          sumPp += Number(datP[1]*datP[0]);
+          makeTdat(datR[0] + '원', datR[1], datP[1], Number(datR[1]*datR[0]), Number(datP[1]*datP[0]));
+        }
+        makeTdat('총 결과', sumRc, sumPc, sumRp, sumPp);
+      }
+
+      function calcSet(category, price, plusValue)
+      {
+        var dat = calcSearch(category, price);
+        dat[1] += Number(plusValue);
+      }
+
+      function calcReset()
+      {
+        var dat;
+        for(var i=0; i<sumArrayR.length; i++)
+        {
+          dat = sumArrayR[i];
+          dat[1] = 0;
+        }
+        for(var i=0; i<sumArrayP.length; i++)
+        {
+          dat = sumArrayP[i];
+          dat[1] = 0;
+        }
+      }
+
+      function calcSearch(category, price)
+      {
+        /*
+          sumArrayR 또는 sumArrayP에서 통계 기준이 되는 가격 값이 존재하는지 검사함
+          존재하지 않으면 새로 만듬
+        */
+        var arr = (Number(category)==0)?sumArrayR:sumArrayP;
+        var dat;
+        for(var i=0; i<arr.length; i++)
+        {
+          dat = arr[i];
+          if(dat[0] == price) return dat;
+        }
+        dat = [price, 0];
+        arr.push(dat);
+        return dat;
+      }
+
+      function makeTdat(price, Rcount, Pcount, Rprice, Pprice)
+      {
+        var tr = document.createElement('tr');
+
+        var span = document.createElement('th');
+        span.innerText = price;
+        tr.appendChild(span);
+        span = document.createElement('td');
+        span.innerText = Rcount;
+        tr.appendChild(span);
+        span = document.createElement('td');
+        span.innerText = Pcount;
+        tr.appendChild(span);
+        span = document.createElement('td');
+        span.innerText = Rprice;
+        tr.appendChild(span);
+        span = document.createElement('td');
+        span.innerText = Pprice;
+        tr.appendChild(span);
+        span = document.createElement('td');
+        span.innerText = Number(Rcount - Pcount);
+        if(Number(span.innerText)>0) span.setAttribute('class', 'profit');
+        else if(Number(span.innerText)<0) span.setAttribute('class', 'loss');
+        tr.appendChild(span);
+        span = document.createElement('td');
+        span.innerText = Number(Rprice - Pprice);
+        if(Number(span.innerText)>0) span.setAttribute('class', 'profit');
+        else if(Number(span.innerText)<0) span.setAttribute('class', 'loss');
+        tr.appendChild(span);
+        tbody.appendChild(tr);
+      }
+
+      function makeTdatB(name, count)
+      {
+        var tr = document.createElement('tr');
+
+        var span = document.createElement('th');
+        span.innerText = name;
+        tr.appendChild(span);
+        span = document.createElement('td');
+        span.innerText = count;
+        if(Number(count)>0) span.setAttribute('class', 'profit');
+        if(Number(count)<0) span.setAttribute('class', 'loss');
+        tr.appendChild(span);
+        tbody_counter.appendChild(tr);
+      }
+
+      function makeCbox(Dname, Darray)
+      {
+        makeCnbtn(Dname);
+        var box = document.createElement('div'); // make .box
+        box.setAttribute('class', 'box');
+        box.style.display = 'none';
+        var spans, weed;
+        box.appendChild(makeChead(Dname));
+        for(var i=0; i<Darray.length; i++)
+        {
+          spans = Darray[i];
+          for(var j=0; j<spans.length; j++)
+          {
+            weed = spans[j];
+            box.appendChild(makeCweed(weed[0], weed[1], weed[2]));
+          }
+          box.appendChild(makeCbr());
+        }
+        return box;
+      }
+
+      function makeChead(title)
+      {
+        var h3 = document.createElement('h3'); // make h3
+        h3.innerText = title;
+        return h3;
+      }
+
+      function makeCbr()
+      {
+        var br = document.createElement('br'); // make br
+        return br;
+      }
+
+      function makeCweed(name, price, barcode)
+      {
+        var weed = document.createElement('div'); // make .weed
+        weed.setAttribute('class', 'weed');
+
+        // 이름, 가격, 바코드, 현재고, 실재고
+        var span = document.createElement('span');
+        span.innerText = name;
+        weed.appendChild(span);
+        span = document.createElement('span');
+        span.innerText = price;
+        weed.appendChild(span);
+        span = document.createElement('span');
+        if(barcode.length <= 8 && barcode.length >= 7) EAN8_draw(span, barcode);
+        else if(barcode.length <= 13 && barcode.length >= 12) EAN13_draw(span, barcode);
+        //span.innerText = barcode;
+        weed.appendChild(span);
+        span = document.createElement('span');
+        span.innerText += '실제 수량';
+        weed.appendChild(span);
+        span = document.createElement('input');
+        span.setAttribute('type', 'number');
+        span.setAttribute('value', '0');
+        span.addEventListener('input', EcheckCount);
+        weed.appendChild(span);
+        span = document.createElement('span');
+        span.innerText += 'POS 수량';
+        weed.appendChild(span);
+        span = document.createElement('input');
+        span.setAttribute('type', 'number');
+        span.setAttribute('value', '0');
+        span.addEventListener('input', EcheckCount);
+        weed.appendChild(span);
+        boxAll.push(weed);
+        return weed;
+      }
+
+      function makeCnbtn(Dname)
+      {
+        var btn = document.createElement('div'); // make .btn
+        btn.setAttribute('class', 'btn');
+        btn.setAttribute('onclick', 'EshowBox(' + btnsize + ')');
+        btn.innerText = Dname;
+        btnsize++;
+        nav.appendChild(btn);
+      }
+
+      function EshowBox(i)
+      {
+        EhideBox(currentShow);
+        boxes[i].style.display = 'block';
+        nav.getElementsByClassName('btn')[i].setAttribute('class', 'btn selected');
+        currentShow = i;
+      }
+
+      function EhideBox(i)
+      {
+        boxes[i].style.display = 'none';
+        nav.getElementsByClassName('btn')[i].setAttribute('class', 'btn');
+      }
+
+      function EcheckCount()
+      {
+        var parent = this.parentNode;
+        var spans = parent.getElementsByTagName('span');
+
+        var price = spans[1];
+        spans = parent.getElementsByTagName('input');
+        var in1 = spans[0];
+        var in2 = spans[1];
+        var in1c = Number(in1.value);
+        var in2c = Number(in2.value);
+        if(in1c == in2c)
+        {
+          in1.setAttribute('class', '');
+        }
+        else if(in1c < in2c)
+        {
+          in1.setAttribute('class', 'loss');
+        }
+        else
+        {
+          in1.setAttribute('class', 'profit');
+        }
+      }
+
+      function EshowResult()
+      {
+        calcResult();
+        EshowBox(0);
+      }
+
+      function EAN8_draw(DOMobject, string8)
+      {
+        var line;
+        var cd = EAN8_checkDigit(string8.substring(0, 7));
+        var ean8 = string8.substring(0, 7) + cd;
+        if(string8.length == 8 && ean8 != string8) throw 'check digit exception';
+        var bin8 = '101';
+        bin8 += EAN8_makeLeftLine(ean8.substring(0,4));
+        bin8 += '01010';
+        bin8 += EAN8_makeRightLine(ean8.substring(4,8));
+        bin8 += '101';
+        for(var i=0; i<bin8.length; i++)
+        {
+          line = document.createElement('div');
+          if(bin8[i] == '1') line.setAttribute('class', 'barcode-black');
+          else line.setAttribute('class', 'barcode-white');
+          DOMobject.appendChild(line);
+        }
+      }
+
+      function EAN8_makeLeftLine(string4)
+      {
+        var line = '';
+        for(var i=0; i<4; i++)
+        {
+          switch(string4[i])
+          {
+            case '0': line += '0001101'; break;
+            case '1': line += '0011001'; break;
+            case '2': line += '0010011'; break;
+            case '3': line += '0111101'; break;
+            case '4': line += '0100011'; break;
+            case '5': line += '0110001'; break;
+            case '6': line += '0101111'; break;
+            case '7': line += '0111011'; break;
+            case '8': line += '0110111'; break;
+            case '9': line += '0001011'; break;
+          }
+        }
+        return line;
+      }
+
+      function EAN8_makeRightLine(string4)
+      {
+        var line = '';
+        for(var i=0; i<4; i++)
+        {
+          switch(string4[i])
+          {
+            case '0': line += '1110010'; break;
+            case '1': line += '1100110'; break;
+            case '2': line += '1101100'; break;
+            case '3': line += '1000010'; break;
+            case '4': line += '1011100'; break;
+            case '5': line += '1001110'; break;
+            case '6': line += '1010000'; break;
+            case '7': line += '1000100'; break;
+            case '8': line += '1001000'; break;
+            case '9': line += '1110100'; break;
+          }
+        }
+        return line;
+      }
+
+      function EAN8_checkDigit(string7)
+      {
+        var parityc = 0;
+        var parity;
+        for(var i=0; i<7; i++)
+        {
+          if((i+3)%2 != 0) parityc += Number(string7[i]) * 3;
+          else parityc += Number(string7[i]);
+        }
+        for(parity=0; (parityc+parity) % 10 != 0; parity++) ;
+        return parity;
+      }
+
+      function EAN13_draw(DOMobject, string13)
+      {
+        var line;
+        var cd = EAN13_checkDigit(string13.substring(0, 12));
+        var ean13 = string13.substring(0, 12) + cd;
+        if(string13.length == 13 && ean13 != string13) throw 'check digit exception';
+        var bin13 = '101';
+        bin13 += EAN13_makeLeftLine(ean13.substring(0,7));
+        bin13 += '01010';
+        bin13 += EAN13_makeRightLine(ean13.substring(7,13));
+        bin13 += '101';
+        for(var i=0; i<bin13.length; i++)
+        {
+          line = document.createElement('div');
+          if(bin13[i] == '1') line.setAttribute('class', 'barcode-black');
+          else line.setAttribute('class', 'barcode-white');
+          DOMobject.appendChild(line);
+        }
+      }
+
+      function EAN13_makeLeftLine(string7)
+      {
+        var line = '';
+        var parityRule = '';
+        switch(string7[0])
+        {
+          case '0': parityRule = '000000'; break;
+          case '1': parityRule = '001011'; break;
+          case '2': parityRule = '001101'; break;
+          case '3': parityRule = '001110'; break;
+          case '4': parityRule = '010011'; break;
+          case '5': parityRule = '011001'; break;
+          case '6': parityRule = '011100'; break;
+          case '7': parityRule = '010101'; break;
+          case '8': parityRule = '010110'; break;
+          case '9': parityRule = '011010'; break;
+        }
+        for(var i=1; i<7; i++)
+        {
+          switch(string7[i] + parityRule[i-1])
+          {
+            case '00': line += '0001101'; break;
+            case '10': line += '0011001'; break;
+            case '20': line += '0010011'; break;
+            case '30': line += '0111101'; break;
+            case '40': line += '0100011'; break;
+            case '50': line += '0110001'; break;
+            case '60': line += '0101111'; break;
+            case '70': line += '0111011'; break;
+            case '80': line += '0110111'; break;
+            case '90': line += '0001011'; break;
+
+            case '01': line += '0100111'; break;
+            case '11': line += '0110011'; break;
+            case '21': line += '0011011'; break;
+            case '31': line += '0100001'; break;
+            case '41': line += '0011101'; break;
+            case '51': line += '0111001'; break;
+            case '61': line += '0000101'; break;
+            case '71': line += '0010001'; break;
+            case '81': line += '0001001'; break;
+            case '91': line += '0010111'; break;
+          }
+        }
+        return line;
+      }
+
+      function EAN13_makeRightLine(string6)
+      {
+        var line = '';
+        for(var i=0; i<6; i++)
+        {
+          switch(string6[i])
+          {
+            case '0': line += '1110010'; break;
+            case '1': line += '1100110'; break;
+            case '2': line += '1101100'; break;
+            case '3': line += '1000010'; break;
+            case '4': line += '1011100'; break;
+            case '5': line += '1001110'; break;
+            case '6': line += '1010000'; break;
+            case '7': line += '1000100'; break;
+            case '8': line += '1001000'; break;
+            case '9': line += '1110100'; break;
+          }
+        }
+        return line;
+      }
+
+      function EAN13_checkDigit(string12)
+      {
+        var parityc = 0;
+        var parity;
+        for(var i=0; i<12; i++)
+        {
+          if((i+3)%2 == 0) parityc += Number(string12[i]) * 3;
+          else parityc += Number(string12[i]);
+        }
+        for(parity=0; (parityc+parity) % 10 != 0; parity++) ;
+        return parity;
+      }
+
+    </script>
+  </body>
+</html>
