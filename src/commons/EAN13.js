@@ -68,13 +68,7 @@ function calc(
 function Line(code) {
   return (
     <div
-      style={{
-        'display': 'inline-block',
-        'width': '2px',
-        'height': '100px',
-        'border': (code==='1' ? 'solid 1px #000' : 'solid 1px #fff'),
-        'background-color': (code==='1' ? '#000' : '#fff'),
-      }}
+      className={code === '1' ? 'barcode-black' : 'barcode-white'}
     ></div>
   );
 }
@@ -84,7 +78,7 @@ export default function EAN13({
 }) {
   return (
     <>
-      <span style={{'display': 'inline-block', 'margin-left': '20px', 'height': '100px'}}></span>{Array.from(calc(digit)).map(Line)}
+      {Array.from(calc(digit)).map(Line)}
     </>
   );
 }

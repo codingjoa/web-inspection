@@ -1,27 +1,32 @@
-import React from 'react';
+import React from 'react'
 import EAN8 from './commons/EAN8'
 import EAN13 from './commons/EAN13'
+import InputField from './commons/InputField'
+import DB from './commons/db'
 
-function World(props) {
-  return (<>{props.count}</>);
+function fields([
+  name, price, barcode
+]) {
+  return (
+    <InputField
+      barcode={barcode}
+      name={name}
+      price={price}
+    />
+  );
 }
 
 export default function() {
-  let a = 0;
-  const [ count, setCount ] = React.useState(0);
-  console.log(count, a);
-  const handle = () => {
-    setCount(count+1);
-    a++;
-  };
+  const result = DB['국산담배'].map(fields);
+  const result2 = DB['외산1'].map(fields);
+  const result3 = DB['외산2'].map(fields);
+  const result4 = DB['일본'].map(fields);
   return (
     <>
-    <h1>Hello, <World count={count}/></h1>
-      <EAN8 digit="8801862"></EAN8><br />
-      <EAN13 digit="880111600045"></EAN13><br />
-      <>{a}</>
-      <a href="http://www.naver.com/" />링크
-      <button onClick={handle}>숫자 올리기</button>
+      {result}
+      {result2}
+      {result3}
+      {result4}
     </>
   );
 }

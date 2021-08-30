@@ -53,14 +53,20 @@ function calc(
   const ean8 = Array.from(`${string7}${cd}`);
   return `101${leftLine[ean8[0]-0]}${leftLine[ean8[1]-0]}${leftLine[ean8[2]-0]}${leftLine[ean8[3]-0]}01010${rightLine[ean8[4]-0]}${rightLine[ean8[5]-0]}${rightLine[ean8[6]-0]}${rightLine[ean8[7]-0]}101`;
 }
-
+function Line(code) {
+  return (
+    <div
+      className={code === '1' ? 'barcode-black' : 'barcode-white'}
+    ></div>
+  );
+}
 
 export default function EAN8({
   digit
 }) {
   return (
     <>
-      {calc(digit)}
+      {Array.from(calc(digit)).map(Line)}
     </>
   );
 }
