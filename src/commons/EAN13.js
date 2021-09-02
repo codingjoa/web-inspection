@@ -55,6 +55,7 @@ function checkDigit(
     else parityc += Number(string12[i]);
   }
   for(parity=0; (parityc+parity) % 10 !== 0; parity++) ;
+  //return (((parityc % 10) > 0) ? 10 : 0) - (parityc % 10)
   return parity;
 }
 function calc(
