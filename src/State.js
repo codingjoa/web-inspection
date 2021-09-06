@@ -1,32 +1,45 @@
 import React from 'react'
-import EAN8 from './commons/EAN8'
-import EAN13 from './commons/EAN13'
-import InputField from './commons/InputField'
-import DB from './commons/db'
+import List1 from './commons/List1'
+import List2 from './commons/List2'
 
-function fields([
-  name, price, barcode
-]) {
-  return (
-    <InputField
-      barcode={barcode}
-      name={name}
-      price={price}
-    />
+const menus = [
+  {name: '결과', index: 2},
+  {name: '실재고 등록', index: 0},
+  {name: 'POS재고 등록', index: 1}
+];
+function Dispatch(dp) {
+  return ({
+    index,
+    name
+  }) => (
+    <div
+      className="btn"
+      onClick={() => dp(index)}
+    >
+      {name}
+    </div>
   );
 }
 
-export default function() {
-  const result = DB['국산담배'].map(fields);
-  const result2 = DB['외산1'].map(fields);
-  const result3 = DB['외산2'].map(fields);
-  const result4 = DB['일본'].map(fields);
+export default function Main() {
+  const [ menu, setMenu ] = React.useState(0);
+  const MenuButtons = menus.map(Dispatch(setMenu));
+  const List = React.useMemo(() => {
+    if(menu === 0) {
+      return(<List1 />);
+    } else {
+      return (<List2 />);
+    }
+  }, [menu]);
   return (
     <>
-      {result}
-      {result2}
-      {result3}
-      {result4}
+      <div>
+        {menu}
+      </div>
+      <div>
+        {MenuButtons}
+      </div>
+      {List}
     </>
   );
 }
