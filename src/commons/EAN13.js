@@ -1,3 +1,4 @@
+import React from 'react';
 const leftLineRules = [
   '000000',
   '001011',
@@ -74,7 +75,7 @@ function Line(code) {
   );
 }
 
-export default function EAN13({
+const EAN13 = React.memo(function EAN13({
   digit
 }) {
   return (
@@ -82,4 +83,5 @@ export default function EAN13({
       {Array.from(calc(digit)).map(Line)}
     </>
   );
-}
+});
+export default EAN13;

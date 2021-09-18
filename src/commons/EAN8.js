@@ -1,4 +1,4 @@
-
+import React from 'react';
 const leftLine = [
   '0001101',
   '0011001',
@@ -35,6 +35,7 @@ function checkDigit(
   for(parity=0; (parityc+parity) % 10 !== 0; parity++) ;
   return parity;
 }
+/* unused
 function validate(
   string8
 ) {
@@ -45,7 +46,7 @@ function validate(
   }
   return ean8;
 }
-
+*/
 function calc(
   string7
 ) {
@@ -61,7 +62,7 @@ function Line(code) {
   );
 }
 
-export default function EAN8({
+const EAN8 = React.memo(function EAN8({
   digit
 }) {
   return (
@@ -69,4 +70,5 @@ export default function EAN8({
       {Array.from(calc(digit)).map(Line)}
     </>
   );
-}
+});
+export default EAN8;
